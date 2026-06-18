@@ -231,6 +231,12 @@ with tab1:
                 help="Siempre coincide con el inspector seleccionado en 'Elaboró'",
                 disabled=True,
             )
+            if firma_1:
+                ruta_firma_1 = get_signature_for_person(firma_1)
+                if ruta_firma_1:
+                    st.image(ruta_firma_1, caption=f"Firma de {firma_1}", width=180)
+                else:
+                    st.warning("⚠️ Sin firma registrada (Elaboró)")
         with col2:
             firma_2_default = valores.get("firma_2", elaboro)
             firma_2 = st.selectbox(
@@ -239,8 +245,14 @@ with tab1:
                 index=opciones_inspectores.index(firma_2_default) if firma_2_default in opciones_inspectores else opciones_inspectores.index(elaboro) if elaboro in opciones_inspectores else 0,
                 help="Inspector que revisa el informe",
             )
+            if firma_2:
+                ruta_firma_2 = get_signature_for_person(firma_2)
+                if ruta_firma_2:
+                    st.image(ruta_firma_2, caption=f"Firma de {firma_2}", width=180)
+                else:
+                    st.warning("⚠️ Sin firma registrada (Revisó)")
 
-        st.caption("Las firmas automáticas se gestionan en código desde `config/signature_map.py`.")
+        st.caption("Las firmas automáticas se cargan desde la carpeta de configuración (`config/firmas/`).")
 
 with tab2:
     st.subheader("🎯 Selección de Módulos")
