@@ -383,7 +383,11 @@ with tab3:
             st.write("Descarga todo el estado actual e imágenes en un archivo ZIP para usar en otra computadora o guardarlo como respaldo.")
             
             # Guardamos temporalmente para generar el ZIP de descarga
-            nombre_temporal = "_temp_backup"
+            import uuid
+            if "backup_session_id" not in st.session_state:
+                st.session_state.backup_session_id = f"_temp_backup_{uuid.uuid4().hex[:8]}"
+            nombre_temporal = st.session_state.backup_session_id
+            
             from persistencia import guardar_informe, exportar_zip, eliminar_informe
             guardar_informe(nombre_temporal)
             zip_bytes = exportar_zip(nombre_temporal)
