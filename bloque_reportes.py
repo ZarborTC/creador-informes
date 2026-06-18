@@ -90,50 +90,61 @@ else:
         Módulo de datos: `{info_tipo['modulo']}`
         """)
         
-        # Botón para generar reporte
-        if st.button(f"🔄 Generar Reporte de {info_tipo['nombre']}", type="primary"):
-            with st.spinner(f"Generando reporte de {info_tipo['nombre']}..."):
-                try:
-                    # Salvaguarda extra en caso de manipulación manual del estado
-                    if SOLO_REPORTE_VISUAL and tipo_seleccionado != "visual":
-                        st.error("❌ En modo de prueba solo se puede generar el reporte de Inspección Visual.")
-                        st.stop()
+        # Generación y previsualización automática del reporte
+        with st.spinner(f"Preparando previsualización en tiempo real del reporte..."):
+            try:
+                # Salvaguarda extra en caso de manipulación manual del estado
+                if SOLO_REPORTE_VISUAL and tipo_seleccionado != "visual":
+                    st.error("❌ En modo de prueba solo se puede generar el reporte de Inspección Visual.")
+                    st.stop()
 
-                    # Crear instancia del reporte específico
-                    reporte = info_tipo["clase"]()
-                    
-                    # Generar el reporte
-                    output_filename = build_unique_report_filename(tipo_seleccionado)
-                    output_path = reporte.generar_reporte(output_filename)
-                    
-                    # Leer el archivo generado
+                # Crear instancia del reporte específico
+                reporte = info_tipo["clase"]()
+                
+                # Generar el reporte
+                output_filename = build_unique_report_filename(tipo_seleccionado)
+                output_path = reporte.generar_reporte(output_filename)
+                
+                # Leer el archivo generado
+                try:
+                    with open(output_path, "rb") as pdf_file:
+                        pdf_bytes = pdf_file.read()
+                finally:
                     try:
-                        with open(output_path, "rb") as pdf_file:
-                            pdf_bytes = pdf_file.read()
-                    finally:
-                        try:
-                            if os.path.exists(output_path):
-                                os.remove(output_path)
-                        except OSError:
-                            pass
-                    
-                    # Mostrar mensaje de éxito
-                    st.success(f"✅ Reporte de {info_tipo['nombre']} generado exitosamente!")
-                    
-                    # Proporcionar descarga del PDF
+                        if os.path.exists(output_path):
+                            os.remove(output_path)
+                    except OSError:
+                        pass
+                
+                # Mostrar botones de acción y la previsualización
+                col_acc1, col_acc2 = st.columns([1, 1])
+                with col_acc1:
                     st.download_button(
-                        label=f"📥 Descargar Reporte de {info_tipo['nombre']}",
+                        label=f"📥 Descargar PDF Completo",
                         data=pdf_bytes,
                         file_name=output_filename,
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        type="primary",
+                        use_container_width=True
                     )
-                    
-                except Exception as e:
-                    st.error(f"❌ Error al generar el reporte: {str(e)}")
-                    st.write("**Posibles causas:**")
-                    st.write("- Falta de datos en los módulos correspondientes")
-                    st.write("- Error en la estructura de datos")
-                    st.write("- Problema con las dependencias")
+                with col_acc2:
+                    if st.button("🔄 Actualizar Vista Previa", use_container_width=True):
+                        st.rerun()
+
+                st.subheader("👀 Previsualización del PDF")
+                
+                # Renderizar PDF en un Iframe base64
+                import base64
+                base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" style="border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></iframe>'
+                st.markdown(pdf_display, unsafe_allow_html=True)
+                
+            except Exception as e:
+                st.error(f"❌ Error al generar la previsualización del reporte: {str(e)}")
+                st.write("**Posibles causas:**")
+                st.write("- Falta de datos en los módulos correspondientes")
+                st.write("- Error en la estructura de datos")
+                st.write("- Problema con las dependencias")
 
 # Información adicional
 with st.expander("ℹ️ Información sobre los Reportes", expanded=False):
