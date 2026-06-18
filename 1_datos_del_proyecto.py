@@ -90,7 +90,7 @@ else:
 st.progress(progress/100)
 
 # Crear pestañas para organizar la información
-tab1, tab2 = st.tabs(["📝 Datos del Proyecto", "⚙️ Configuración de Módulos"])
+tab1, tab2, tab3 = st.tabs(["📝 Datos del Proyecto", "⚙️ Configuración de Módulos", "📂 Guardar/Cargar Informe"])
 
 # Definir módulos disponibles
 modulos_disponibles = {
@@ -290,6 +290,134 @@ with tab2:
             st.success(f"✅ {len(modulos_seleccionados)} módulos seleccionados")
         else:
             st.warning("⚠️ No hay módulos seleccionados")
+
+with tab3:
+    st.subheader("📂 Guardar o Cargar Estado del Informe")
+    st.markdown(
+        "Esta sección permite guardar toda la información actual ingresada en el formulario "
+        "para que pueda ser cargada y re-editada en el futuro."
+    )
+    
+    col_g, col_c = st.columns(2)
+    
+    with col_g:
+        with st.container(border=True):
+            st.markdown("### 💾 Guardar Informe")
+            default_name = ""
+            if "datos_proyecto" in st.session_state:
+                dp = st.session_state.datos_proyecto
+                num_ord = dp.get("numero_orden", "")
+                cons = dp.get("consecutivo_inicial", "")
+                cli = dp.get("cliente", "")
+                default_name = f"Informe_T{num_ord}I{cons}_{cli}".strip("_")
+            
+            nombre_guardar = st.text_input(
+                "Nombre del informe para guardar:",
+                value=default_name,
+                help="Ingresa un nombre para identificar este informe en el servidor local"
+            )
+            
+            if st.button("💾 Guardar localmente", type="primary", use_container_width=True):
+                if not nombre_guardar:
+                    st.error("⚠️ Debes ingresar un nombre para el informe.")
+                else:
+                    from persistencia import guardar_informe
+                    if guardar_informe(nombre_guardar):
+                        st.success(f"✅ Informe '{nombre_guardar}' guardado exitosamente en el servidor.")
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error("❌ Ocurrió un error al guardar el informe.")
+                    
+    with col_c:
+        with st.container(border=True):
+            st.markdown("### 📂 Cargar Informe Guardado")
+            from persistencia import listar_informes_guardados, cargar_informe, eliminar_informe
+            informes_guardados = listar_informes_guardados()
+            
+            if not informes_guardados:
+                st.info("No hay informes guardados localmente en el servidor.")
+            else:
+                informe_seleccionado = st.selectbox(
+                    "Selecciona un informe para cargar:",
+                    options=informes_guardados,
+                    help="Selecciona de la lista de informes persistidos localmente"
+                )
+                
+                col_b1, col_b2 = st.columns(2)
+                with col_b1:
+                    if st.button("📂 Cargar Seleccionado", type="primary", use_container_width=True):
+                        if cargar_informe(informe_seleccionado):
+                            st.success(f"✅ Informe '{informe_seleccionado}' cargado correctamente.")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al cargar el informe.")
+                with col_b2:
+                    if st.button("🗑️ Eliminar Seleccionado", type="secondary", use_container_width=True):
+                        if eliminar_informe(informe_seleccionado):
+                            st.success(f"🗑️ Informe '{informe_seleccionado}' eliminado.")
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al eliminar el informe.")
+                        
+    st.markdown("---")
+    with st.container(border=True):
+        st.markdown("### 📥 Exportar / Importar desde Archivo ZIP (Navegador)")
+        col_exp, col_imp = st.columns(2)
+        
+        with col_exp:
+            st.markdown("**Descargar Copia de Respaldo**")
+            st.write("Descarga todo el estado actual e imágenes en un archivo ZIP para usar en otra computadora o guardarlo como respaldo.")
+            
+            # Guardamos temporalmente para generar el ZIP de descarga
+            nombre_temporal = "_temp_backup"
+            from persistencia import guardar_informe, exportar_zip, eliminar_informe
+            guardar_informe(nombre_temporal)
+            zip_bytes = exportar_zip(nombre_temporal)
+            eliminar_informe(nombre_temporal)
+            
+            if zip_bytes:
+                filename_download = f"Respaldo_Informe_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+                if "datos_proyecto" in st.session_state:
+                    dp = st.session_state.datos_proyecto
+                    num_ord = dp.get("numero_orden", "")
+                    cons = dp.get("consecutivo_inicial", "")
+                    filename_download = f"Respaldo_T{num_ord}I{cons}.zip"
+                    
+                st.download_button(
+                    label="📥 Descargar Archivo ZIP",
+                    data=zip_bytes,
+                    file_name=filename_download,
+                    mime="application/zip",
+                    use_container_width=True
+                )
+            else:
+                st.warning("No hay datos suficientes para generar un archivo de respaldo.")
+                
+        with col_imp:
+            st.markdown("**Subir Copia de Respaldo**")
+            st.write("Sube un archivo ZIP previamente descargado para restaurar su información completa en esta aplicación.")
+            
+            uploaded_backup = st.file_uploader(
+                "Selecciona el archivo ZIP de respaldo:",
+                type=["zip"],
+                help="Sube el archivo .zip exportado de la aplicación"
+            )
+            
+            if uploaded_backup:
+                if st.button("📂 Restaurar Respaldo Subido", type="primary", use_container_width=True):
+                    from persistencia import importar_desde_zip, cargar_informe
+                    nombre_importado = importar_desde_zip(uploaded_backup)
+                    if nombre_importado:
+                        if cargar_informe(nombre_importado):
+                            st.success(f"✅ Respaldo '{nombre_importado}' cargado exitosamente.")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al cargar la información importada.")
+                    else:
+                        st.error("❌ El archivo subido no es válido o está dañado.")
 
 # Botones de acción en la parte inferior
 saved_key = "saved_1_0"
