@@ -268,3 +268,39 @@ def eliminar_informe(nombre_informe):
         shutil.rmtree(ruta_informe)
         return True
     return False
+
+def generar_zip_completo(pdf_bytes, pdf_name):
+    """
+    Genera un archivo ZIP en memoria que contiene:
+    1. El archivo PDF generado.
+    2. Los datos del informe (JSON e imágenes) del estado actual.
+    """
+    import uuid
+    # Nombre temporal único para el guardado local del estado
+    temp_name = f"_temp_zip_{uuid.uuid4().hex[:8]}"
+    guardar_informe(temp_name)
+    
+    ruta_informe = os.path.join(DIRECTORIO_GUARDADO, temp_name)
+    zip_buffer = io.BytesIO()
+    
+    try:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            # Añadir el PDF en la raíz del zip
+            zip_file.writestr(pdf_name, pdf_bytes)
+            
+            # Añadir todos los archivos de la carpeta del informe (datos.json y subcarpeta de imágenes)
+            for root, dirs, files in os.walk(ruta_informe):
+                for file in files:
+                    # Omitir el propio PDF si por casualidad existiera ahí
+                    if file == pdf_name:
+                        continue
+                    ruta_completa = os.path.join(root, file)
+                    ruta_relativa = os.path.relpath(ruta_completa, ruta_informe)
+                    zip_file.write(ruta_completa, arcname=ruta_relativa)
+    finally:
+        # Limpiar la carpeta temporal pase lo que pase
+        eliminar_informe(temp_name)
+        
+    zip_buffer.seek(0)
+    return zip_buffer.getvalue()
+

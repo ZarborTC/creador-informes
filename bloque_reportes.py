@@ -116,14 +116,41 @@ else:
                     except OSError:
                         pass
                 
+                # Construir el nombre base del reporte
+                from utils import generar_numero_informe, obtener_consecutivo_por_tipo
+                num_informe_base = "Informe"
+                if "datos_proyecto" in st.session_state:
+                    dp = st.session_state.datos_proyecto
+                    num_ord = dp.get("numero_orden", "")
+                    cons = dp.get("consecutivo_inicial", "")
+                    fecha = dp.get("fecha_obj", None) or dp.get("fecha", None)
+                    year = None
+                    if hasattr(fecha, 'year'):
+                        year = fecha.year
+                    elif isinstance(fecha, str):
+                        try:
+                            year = int(fecha.split("-")[0])
+                        except Exception:
+                            pass
+                    offset = obtener_consecutivo_por_tipo(tipo_seleccionado)
+                    if num_ord and cons:
+                        num_informe_base = generar_numero_informe(num_ord, cons, year=year, offset=offset)
+                
+                pdf_download_name = f"{num_informe_base}.pdf"
+                zip_download_name = f"{num_informe_base}.zip"
+
+                # Generar el ZIP que contiene el PDF + los datos del estado e imágenes
+                from persistencia import generar_zip_completo
+                zip_bytes = generar_zip_completo(pdf_bytes, pdf_download_name)
+                
                 # Mostrar botones de acción y la previsualización
                 col_acc1, col_acc2 = st.columns([1, 1])
                 with col_acc1:
                     st.download_button(
-                        label=f"📥 Descargar PDF Completo",
-                        data=pdf_bytes,
-                        file_name=output_filename,
-                        mime="application/pdf",
+                        label=f"📥 Descargar Informe Completo (ZIP + PDF)",
+                        data=zip_bytes,
+                        file_name=zip_download_name,
+                        mime="application/zip",
                         type="primary",
                         use_container_width=True
                     )
