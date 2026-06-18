@@ -78,3 +78,68 @@ else:
 
 pg = st.navigation(pages)
 pg.run()
+
+# --- AUTO-GUARDADO AUTOMÁTICO Y BOTÓN FLOTANTE ---
+import time
+import uuid
+from persistencia import guardar_informe
+
+# 1. Definir el nombre del informe para guardar
+nombre_guardar = "AutoGuardado_General"
+if "datos_proyecto" in st.session_state:
+    dp = st.session_state.datos_proyecto
+    num_ord = dp.get("numero_orden", "")
+    cons = dp.get("consecutivo_inicial", "")
+    cliente = dp.get("cliente", "")
+    if num_ord and cons:
+        cliente_clean = "".join(c for c in cliente if c.isalnum() or c in "._- ") if cliente else ""
+        nombre_guardar = f"AutoGuardado_T{num_ord}I{cons}_{cliente_clean}".strip("_")
+
+# 2. Lógica de Auto-guardado Automático (cooldown de 30 segundos)
+ahora = time.time()
+if "ultimo_autoguardado" not in st.session_state:
+    st.session_state.ultimo_autoguardado = ahora
+
+if ahora - st.session_state.ultimo_autoguardado >= 30:
+    st.session_state.ultimo_autoguardado = ahora
+    try:
+        guardar_informe(nombre_guardar)
+    except Exception:
+        pass
+
+# 3. Renderizar Estilos y Botón Flotante de Guardado Manual
+st.markdown(
+    """
+    <style>
+    /* Estilo del botón flotante */
+    .stApp div[data-testid="stVerticalBlock"] > div:has(#btn-guardar-flotante-marker) + div button {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 999999;
+        background-color: #2e7d32 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 30px !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
+        border: 2px solid #1b5e20 !important;
+        font-size: 16px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    .stApp div[data-testid="stVerticalBlock"] > div:has(#btn-guardar-flotante-marker) + div button:hover {
+        background-color: #1b5e20 !important;
+        transform: scale(1.08) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+    }
+    </style>
+    <div id="btn-guardar-flotante-marker"></div>
+    """,
+    unsafe_allow_html=True
+)
+
+if st.button("💾 Guardar", key="btn_guardar_flotante_click"):
+    if guardar_informe(nombre_guardar):
+        st.toast(f"💾 ¡Informe guardado con éxito como '{nombre_guardar}'!", icon="✅")
+        st.session_state.ultimo_autoguardado = time.time()
+
