@@ -111,12 +111,18 @@ if ahora - st.session_state.ultimo_autoguardado >= 30:
 st.markdown(
     """
     <style>
-    /* Estilo del botón flotante */
+    /* Estilo del contenedor del botón flotante */
+    .stApp div[data-testid="stVerticalBlock"] > div:has(#btn-guardar-flotante-marker) + div {
+        position: fixed !important;
+        bottom: 25px !important;
+        right: 25px !important;
+        width: auto !important;
+        z-index: 999999 !important;
+        background: transparent !important;
+    }
+    /* Estilo del botón propiamente dicho */
     .stApp div[data-testid="stVerticalBlock"] > div:has(#btn-guardar-flotante-marker) + div button {
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        z-index: 999999;
+        width: auto !important;
         background-color: #2e7d32 !important;
         color: white !important;
         font-weight: bold !important;
