@@ -862,7 +862,7 @@ class GeneradorPDF:
         
         # Fila 2: Contenido de las secciones
         # Columna Elaboró: solo espacio para firma (sin nombre, sin bordes)
-        espacio_firma_elaboro = self._firma_flowable(firma_elaboro_path, 35*mm, 10*mm)
+        espacio_firma_elaboro = self._firma_flowable(firma_elaboro_path, 45.5*mm, 13*mm)
         celda_elaboro = Table([
             [espacio_firma_elaboro],
         ], colWidths=[col_elaboro - 8*mm], splitByRow=0, splitInRow=0)
@@ -878,7 +878,7 @@ class GeneradorPDF:
         # Espacio para sello (sin cuadro)
         espacio_sello = EspacioFirma(22*mm, 12*mm)
         # Espacio para firma sin caja
-        espacio_firma_reviso = self._firma_flowable(firma_reviso_path, 35*mm, 10*mm)
+        espacio_firma_reviso = self._firma_flowable(firma_reviso_path, 45.5*mm, 13*mm)
         # Espacio para NIT (sin texto)
         espacio_nit = EspacioFirma(22*mm, 4*mm)
         

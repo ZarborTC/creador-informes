@@ -234,7 +234,7 @@ with tab1:
             if firma_1:
                 ruta_firma_1 = get_signature_for_person(firma_1)
                 if ruta_firma_1:
-                    st.image(ruta_firma_1, caption=f"Firma de {firma_1}", width=180)
+                    st.image(ruta_firma_1, caption=f"Firma de {firma_1}", width=230)
                 else:
                     st.warning("⚠️ Sin firma registrada (Elaboró)")
         with col2:
@@ -248,7 +248,7 @@ with tab1:
             if firma_2:
                 ruta_firma_2 = get_signature_for_person(firma_2)
                 if ruta_firma_2:
-                    st.image(ruta_firma_2, caption=f"Firma de {firma_2}", width=180)
+                    st.image(ruta_firma_2, caption=f"Firma de {firma_2}", width=230)
                 else:
                     st.warning("⚠️ Sin firma registrada (Revisó)")
 
