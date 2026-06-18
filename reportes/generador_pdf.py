@@ -862,7 +862,7 @@ class GeneradorPDF:
         
         # Fila 2: Contenido de las secciones
         # Columna Elaboró: solo espacio para firma (sin nombre, sin bordes)
-        espacio_firma_elaboro = self._firma_flowable(firma_elaboro_path, col_elaboro - 8*mm, altura_firma)
+        espacio_firma_elaboro = self._firma_flowable(firma_elaboro_path, 35*mm, 10*mm)
         celda_elaboro = Table([
             [espacio_firma_elaboro],
         ], colWidths=[col_elaboro - 8*mm], splitByRow=0, splitInRow=0)
@@ -878,15 +878,16 @@ class GeneradorPDF:
         # Espacio para sello (sin cuadro)
         espacio_sello = EspacioFirma(22*mm, 12*mm)
         # Espacio para firma sin caja
-        espacio_firma_reviso = self._firma_flowable(firma_reviso_path, col_reviso - 49*mm, altura_firma)
+        espacio_firma_reviso = self._firma_flowable(firma_reviso_path, 35*mm, 10*mm)
         # Espacio para NIT (sin texto)
         espacio_nit = EspacioFirma(22*mm, 4*mm)
         
         # Tabla interna para Revisó: espacio para sello a la izquierda, espacio para firma a la derecha
+        # Agregar padding izquierdo para mover todo el contenido más a la derecha
         celda_reviso_superior = Table([
             [espacio_sello, espacio_firma_reviso],  # Espacio para sello y espacio para firma (sin cajas)
             [espacio_nit, Paragraph("", style_name)],  # Espacio para NIT (sin texto)
-        ], colWidths=[22*mm, col_reviso - 49*mm], splitByRow=0, splitInRow=0)
+        ], colWidths=[22*mm, col_reviso - 22*mm], splitByRow=0, splitInRow=0)
         celda_reviso_superior.setStyle(TableStyle([
             ("LEFTPADDING", (0,0), (-1,-1), 5),  # Padding izquierdo para mover contenido a la derecha
             ("RIGHTPADDING", (0,0), (-1,-1), 2),

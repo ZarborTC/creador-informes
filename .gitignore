@@ -3,3 +3,4 @@ __pycache__/
 */__pycache__
 informes_guardados/
 INFORME_*.pdf
+generated_reports/
