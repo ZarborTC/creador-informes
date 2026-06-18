@@ -133,11 +133,25 @@ else:
 
                 st.subheader("👀 Previsualización del PDF")
                 
-                # Renderizar PDF en un Iframe base64
-                import base64
-                base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
-                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" style="border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></iframe>'
-                st.markdown(pdf_display, unsafe_allow_html=True)
+                # Renderizar páginas del PDF como imágenes de alta resolución usando PyMuPDF
+                try:
+                    import fitz  # PyMuPDF
+                    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+                    for i, page in enumerate(doc):
+                        # Matrix zoom = 2.0x para que la resolución del texto sea muy nítida
+                        zoom = 2.0
+                        mat = fitz.Matrix(zoom, zoom)
+                        pix = page.get_pixmap(matrix=mat)
+                        img_bytes = pix.tobytes("png")
+                        
+                        st.markdown(f"**Página {i+1} de {len(doc)}**")
+                        st.image(img_bytes, use_container_width=True)
+                except Exception as img_err:
+                    # Fallback alternativo al iframe base64 en caso de fallar PyMuPDF
+                    import base64
+                    base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+                    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" style="border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></iframe>'
+                    st.markdown(pdf_display, unsafe_allow_html=True)
                 
             except Exception as e:
                 st.error(f"❌ Error al generar la previsualización del reporte: {str(e)}")
