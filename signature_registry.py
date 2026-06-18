@@ -45,7 +45,7 @@ def obtener_ruta_firma(nombre_inspector):
     if not os.path.exists(DIR_FIRMAS):
         os.makedirs(DIR_FIRMAS)
         
-    # Buscar el archivo en la carpeta
+    # Buscar el archivo PNG en la carpeta
     ruta_archivo = os.path.join(DIR_FIRMAS, f"{nombre_normalizado}.png")
     
     if os.path.exists(ruta_archivo):
@@ -54,3 +54,4 @@ def obtener_ruta_firma(nombre_inspector):
     return None
 
 get_signature_for_person = obtener_ruta_firma
+
