@@ -77,6 +77,8 @@ _ALLOWED_PREFIXES = (
     "frecuencias_",
     "elementos_",
     "modulo_",
+    "detalle_",
+    "observaciones_",
 )
 
 _BLOCKED_PREFIXES = (

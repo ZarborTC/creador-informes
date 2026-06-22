@@ -467,6 +467,52 @@ with tab3:
                     else:
                         st.error("❌ El archivo subido no es válido o está dañado.")
 
+# Actualizar session_state en cada ejecución para permitir el guardado automático
+if "bloque_1" not in st.session_state:
+    st.session_state.bloque_1 = {}
+st.session_state.bloque_1.update({
+    "cliente": cliente,
+    "proyecto": proyecto,
+    "subproyecto": subproyecto,
+    "contratista": contratista,
+    "numero_orden": numero_orden,
+    "consecutivo_inicial": consecutivo_inicial,
+    "elaboro": elaboro,
+    "norma_global": norma_global,
+    "fecha": fecha,
+    "lugar": lugar,
+    "firmas": {
+        "firma_1": firma_1,
+        "firma_2": firma_2,
+        "firma_1_path": get_signature_for_person(firma_1),
+        "firma_2_path": get_signature_for_person(firma_2),
+    },
+    "modulos_seleccionados": modulos_seleccionados
+})
+
+if "datos_proyecto" not in st.session_state:
+    st.session_state.datos_proyecto = {}
+st.session_state.datos_proyecto.update({
+    "numero_orden": numero_orden,
+    "consecutivo_inicial": consecutivo_inicial,
+    "numero_informe": generar_numero_informe(numero_orden, consecutivo_inicial, fecha.year if hasattr(fecha, 'year') else datetime.now().year, 0) if (numero_orden and consecutivo_inicial) else "",
+    "fecha": formatear_fecha_para_display(fecha) if hasattr(fecha, 'strftime') else str(fecha),
+    "fecha_obj": fecha,
+    "cliente": cliente,
+    "proyecto": proyecto,
+    "ubicacion": lugar,
+    "inspector": elaboro,
+    "contratista": contratista,
+    "subproyecto": subproyecto,
+    "norma_global": norma_global,
+    "firmas": {
+        "firma_1": firma_1,
+        "firma_2": firma_2,
+        "firma_1_path": get_signature_for_person(firma_1),
+        "firma_2_path": get_signature_for_person(firma_2),
+    }
+})
+
 # Botones de acción en la parte inferior
 saved_key = "saved_1_0"
 if saved_key not in st.session_state:

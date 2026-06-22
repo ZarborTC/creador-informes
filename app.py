@@ -149,3 +149,7 @@ if st.button("💾 Guardar", key="btn_guardar_flotante_click"):
         st.toast(f"💾 ¡Informe guardado con éxito como '{nombre_guardar}'!", icon="✅")
         st.session_state.ultimo_autoguardado = time.time()
 
+# Guardar automáticamente el estado de la sesión en el disco para evitar pérdidas en F5
+from save_state import persist_session_state
+persist_session_state()
+

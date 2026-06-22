@@ -610,6 +610,45 @@ datos_finales = {
     ]
 }
 
+# Actualizar bloque_2_1 en cada ejecución para permitir el guardado automático
+componentes_seleccionados = []
+if kit_seleccionado:
+    kit = next((k for k in kits_disponibles if f"{k['nombre']} - {k['descripcion']}" == kit_seleccionado), None)
+    if kit:
+        componentes_seleccionados = kit['componentes']
+
+st.session_state.bloque_2_1 = {
+    "norma": norma_global,
+    "procedimiento": procedimiento,
+    "equipos_utilizados": {
+        "kit_seleccionado": kit_seleccionado,
+        "componentes": componentes_seleccionados
+    },
+    "materiales_base": materiales_seleccionados,
+    "procesos_soldadura": procesos_seleccionados,
+    "tipos_soldadura": tipos_seleccionados,
+    "fases_inspeccion": st.session_state.tabla_fases_2_1,
+    "elementos_inspeccionados": st.session_state.tabla_elementos_2_1,
+    "esquema": [
+        {
+            "archivo": img["archivo"],
+            "nombre": img["nombre"],
+            "comentario": img["comentario"]
+        }
+        for img in get_esquema_elementos_global()
+    ],
+    "detalle_resultados": detalle_resultados,
+    "observaciones_generales": observaciones_generales,
+    "registros_fotograficos": [
+        {
+            "archivo": img["archivo"],
+            "nombre": img["nombre"],
+            "comentario": img["comentario"]
+        }
+        for img in st.session_state.imagenes_2_1
+    ]
+}
+
 saved_key = "saved_2_1"
 if saved_key not in st.session_state:
     st.session_state[saved_key] = "bloque_2_1" in st.session_state
