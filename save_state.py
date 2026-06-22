@@ -10,8 +10,28 @@ from streamlit.runtime.scriptrunner import get_script_run_ctx
 STATE_DIR = os.path.join(os.path.dirname(__file__), "generated_reports")
 
 def get_state_file() -> str:
-    ctx = get_script_run_ctx()
-    session_id = ctx.session_id if ctx is not None else "default"
+    # Intenta obtener o establecer un UUID único en los parámetros de consulta del navegador (URL)
+    # para que la recarga de página mantenga el mismo estado sin mezclarlo con otros dispositivos/pestañas.
+    try:
+        import uuid
+        if hasattr(st, "query_params"):
+            if "session_uuid" in st.query_params:
+                session_id = st.query_params["session_uuid"]
+            else:
+                session_id = uuid.uuid4().hex[:12]
+                st.query_params["session_uuid"] = session_id
+        else:
+            params = st.experimental_get_query_params()
+            if "session_uuid" in params:
+                session_id = params["session_uuid"][0]
+            else:
+                session_id = uuid.uuid4().hex[:12]
+                st.experimental_set_query_params(session_uuid=session_id)
+    except Exception:
+        # Fallback si st.query_params o st.experimental_set_query_params no están disponibles o fallan
+        ctx = get_script_run_ctx()
+        session_id = ctx.session_id if ctx is not None else "default"
+
     return os.path.join(STATE_DIR, f"saved_session_state_{session_id}.json")
 
 def _cleanup_old_states() -> None:
