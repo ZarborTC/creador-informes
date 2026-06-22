@@ -171,10 +171,27 @@ def get_tipo_inspeccion(procedimiento):
     return None
 
 def cargar_inspectores():
-    """Carga la lista de inspectores desde el archivo CSV."""
+    """Carga la lista de inspectores desde el archivo CSV, ordenados por roles (Ingeniero, Auxiliar) y alfabéticamente."""
     try:
         df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'config', 'inspectores.csv'))
-        return df['nombre'].tolist()
+        inspectores = df['nombre'].dropna().tolist()
+        
+        # Agregar a Jorge Uribe si no estuviera en el CSV
+        if "Jorge Uribe" not in inspectores:
+            inspectores.append("Jorge Uribe")
+            
+        def obtener_rol(nombre):
+            n = nombre.lower()
+            import unicodedata
+            n_clean = "".join(c for c in unicodedata.normalize('NFD', n) if not unicodedata.combining(c))
+            if "juan jose" in n_clean or "miguel" in n_clean or "juan pablo" in n_clean:
+                return "Auxiliar"
+            return "Ingeniero"
+            
+        ingenieros = sorted([i for i in inspectores if obtener_rol(i) == "Ingeniero"])
+        auxiliares = sorted([i for i in inspectores if obtener_rol(i) == "Auxiliar"])
+        
+        return ingenieros + auxiliares
     except Exception as e:
         st.error(f"Error al cargar la lista de inspectores: {str(e)}")
         return ["Ing. Inspector"]  # Valor por defecto en caso de error

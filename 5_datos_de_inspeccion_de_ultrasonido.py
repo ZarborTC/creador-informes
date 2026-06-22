@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import uuid
 from utils import (
     cargar_kits, get_norma_global, get_material_base,
     get_kits_disponibles, get_componentes_kit, materiales_base,
@@ -327,6 +328,7 @@ with bulk_col_2:
 def agregar_fila_elemento_ut():
     nuevo_numero = len(st.session_state[elementos_key]) + 1
     nueva_fila = {
+        "id": uuid.uuid4().hex,
         "numero": str(nuevo_numero),
         "descripcion_junta": "",
         "numero_junta": "",
@@ -353,6 +355,8 @@ if st.session_state[elementos_key]:
     
     # Filas de la tabla - cada elemento es una sección completa
     for i, elemento in enumerate(st.session_state[elementos_key]):
+        if "id" not in elemento:
+            elemento["id"] = uuid.uuid4().hex
         # Contenedor para cada elemento con borde visual
         with st.container():
             st.markdown(f"#### 🔍 Elemento #{elemento['numero']}")
@@ -365,7 +369,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["descripcion_junta"] = st.text_input(
                     "Descripción de la Junta",
                     value=elemento["descripcion_junta"],
-                    key=f"elem_desc_junta_5_1_{i}",
+                    key=f"elem_desc_junta_5_1_{elemento['id']}",
                     help="Descripción detallada de la junta inspeccionada"
                 )
             
@@ -373,7 +377,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["numero_junta"] = st.text_input(
                     "# de Junta",
                     value=elemento["numero_junta"],
-                    key=f"elem_num_junta_5_1_{i}",
+                    key=f"elem_num_junta_5_1_{elemento['id']}",
                     help="Número identificador de la junta"
                 )
             
@@ -381,7 +385,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["ubicacion_junta"] = st.text_input(
                     "Ubicación de la Junta",
                     value=elemento["ubicacion_junta"],
-                    key=f"elem_ubic_junta_5_1_{i}",
+                    key=f"elem_ubic_junta_5_1_{elemento['id']}",
                     help="Ubicación física de la junta en el componente"
                 )
             
@@ -389,7 +393,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["estampe"] = st.text_input(
                     "Estampe",
                     value=elemento["estampe"],
-                    key=f"elem_estampe_5_1_{i}",
+                    key=f"elem_estampe_5_1_{elemento['id']}",
                     help="Estampe o marca identificadora"
                 )
             
@@ -401,7 +405,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["decibeles_a"] = st.text_input(
                     "Decibeles A",
                     value=elemento["decibeles_a"],
-                    key=f"elem_db_a_5_1_{i}",
+                    key=f"elem_db_a_5_1_{elemento['id']}",
                     help="Valor en decibeles para calificación A"
                 )
             
@@ -409,7 +413,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["decibeles_b"] = st.text_input(
                     "Decibeles B",
                     value=elemento["decibeles_b"],
-                    key=f"elem_db_b_5_1_{i}",
+                    key=f"elem_db_b_5_1_{elemento['id']}",
                     help="Valor en decibeles para calificación B"
                 )
             
@@ -417,7 +421,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["decibeles_c"] = st.text_input(
                     "Decibeles C",
                     value=elemento["decibeles_c"],
-                    key=f"elem_db_c_5_1_{i}",
+                    key=f"elem_db_c_5_1_{elemento['id']}",
                     help="Valor en decibeles para calificación C"
                 )
             
@@ -425,7 +429,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["decibeles_d"] = st.text_input(
                     "Decibeles D",
                     value=elemento["decibeles_d"],
-                    key=f"elem_db_d_5_1_{i}",
+                    key=f"elem_db_d_5_1_{elemento['id']}",
                     help="Valor en decibeles para calificación D"
                 )
             
@@ -437,7 +441,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["discontinuidad_distancia_angular"] = st.text_input(
                     "Distancia Angular",
                     value=elemento["discontinuidad_distancia_angular"],
-                    key=f"elem_dist_ang_5_1_{i}",
+                    key=f"elem_dist_ang_5_1_{elemento['id']}",
                     help="Distancia angular de la discontinuidad"
                 )
             
@@ -445,7 +449,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["discontinuidad_profundidad"] = st.text_input(
                     "Profundidad",
                     value=elemento["discontinuidad_profundidad"],
-                    key=f"elem_prof_5_1_{i}",
+                    key=f"elem_prof_5_1_{elemento['id']}",
                     help="Profundidad de la discontinuidad"
                 )
             
@@ -453,7 +457,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["discontinuidad_distancia_eje_y"] = st.text_input(
                     "Distancia Eje Y",
                     value=elemento["discontinuidad_distancia_eje_y"],
-                    key=f"elem_dist_y_5_1_{i}",
+                    key=f"elem_dist_y_5_1_{elemento['id']}",
                     help="Distancia sobre el eje Y"
                 )
             
@@ -461,7 +465,7 @@ if st.session_state[elementos_key]:
                 st.session_state[elementos_key][i]["discontinuidad_distancia_eje_x"] = st.text_input(
                     "Distancia Eje X",
                     value=elemento["discontinuidad_distancia_eje_x"],
-                    key=f"elem_dist_x_5_1_{i}",
+                    key=f"elem_dist_x_5_1_{elemento['id']}",
                     help="Distancia sobre el eje X"
                 )
             
@@ -474,14 +478,26 @@ if st.session_state[elementos_key]:
                     "Evaluación de la Junta",
                     options=opciones_evaluacion,
                     index=opciones_evaluacion.index(elemento["evaluacion_junta"]),
-                    key=f"elem_eval_5_1_{i}",
+                    key=f"elem_eval_5_1_{elemento['id']}",
                     help="Resultado de la evaluación de la junta"
                 )
             
             with col14:
                 st.markdown("")  # Espacio en blanco para alineación
-                if st.button("🗑️ Eliminar Elemento", key=f"elem_eliminar_5_1_{i}", type="secondary"):
+                col_elim, col_dupl = st.columns(2)
+                if col_elim.button("🗑️ Eliminar", key=f"elem_eliminar_5_1_{elemento['id']}", type="secondary", use_container_width=True):
                     st.session_state[elementos_key].pop(i)
+                    # Re-enumerar secuencialmente
+                    for idx, elem in enumerate(st.session_state[elementos_key]):
+                        elem["numero"] = str(idx + 1)
+                    st.rerun()
+                if col_dupl.button("👯 Duplicar", key=f"elem_duplicar_5_1_{elemento['id']}", type="primary", use_container_width=True):
+                    nuevo_elemento = st.session_state[elementos_key][i].copy()
+                    nuevo_elemento["id"] = uuid.uuid4().hex
+                    st.session_state[elementos_key].insert(i + 1, nuevo_elemento)
+                    # Re-enumerar secuencialmente
+                    for idx, elem in enumerate(st.session_state[elementos_key]):
+                        elem["numero"] = str(idx + 1)
                     st.rerun()
             
             # Separador visual entre elementos
@@ -678,7 +694,7 @@ saved_key = "saved_5_1"
 if saved_key not in st.session_state:
     st.session_state[saved_key] = "bloque_5_1" in st.session_state
 
-if st.button("Guardar Datos", key="guardar_datos_ut"):
+if st.button("Guardar Datos", key="guardar_datos_ut", type="primary"):
     st.write("### Datos guardados correctamente")
     
     st.session_state.bloque_5_1 = {

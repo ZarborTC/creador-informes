@@ -528,14 +528,9 @@ class GeneradorPDF:
         )
         
         if isinstance(text, str):
-            # Convert text to Paragraph for proper text wrapping
-            if '\n' in text:
-                # Handle multi-line text
-                lines = text.split('\n')
-                paragraphs = [Paragraph(line, body_style) for line in lines]
-                rows = paragraphs
-            else:
-                rows = [Paragraph(text, body_style)]
+            # Convert text to Paragraph for proper text wrapping and line breaks
+            text_html = text.replace('\r\n', '<br/>').replace('\n', '<br/>').replace('\r', '<br/>')
+            rows = [Paragraph(text_html, body_style)]
         else:
             # Handle list of strings
             rows = [Paragraph(str(item), body_style) for item in text]

@@ -1181,7 +1181,8 @@ class ReporteInspeccionVisual:
         if detalle and detalle.strip():
             story.append(CondPageBreak(18 * mm))
             story.append(Paragraph(f"{seccion}. DETALLE DE ELEMENTOS INSPECCIONADOS Y RESULTADOS:", styles["HSection"]))
-            story.append(Paragraph(detalle, styles["Body"]))
+            detalle_formatted = detalle.replace("\r\n", "<br/>").replace("\n", "<br/>").replace("\r", "<br/>")
+            story.append(Paragraph(detalle_formatted, styles["Body"]))
             story.append(Spacer(0, 6*mm))
             seccion += 1
 
@@ -1281,7 +1282,8 @@ class ReporteInspeccionVisual:
         if obs and obs.strip():
             story.append(CondPageBreak(18 * mm))
             story.append(Paragraph(f"{seccion}. OBSERVACIONES GENERALES:", styles["HSection"]))
-            story.append(Paragraph(obs, styles["Body"]))
+            obs_formatted = obs.replace("\r\n", "<br/>").replace("\n", "<br/>").replace("\r", "<br/>")
+            story.append(Paragraph(obs_formatted, styles["Body"]))
             story.append(Spacer(0, 6*mm))
             seccion += 1
 

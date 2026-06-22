@@ -205,10 +205,41 @@ with tab1:
         with st.container():
             # Cargar lista de inspectores desde CSV
             inspectores = cargar_inspectores()
-            opciones_inspectores = [""] + inspectores
+            
+            def obtener_rol(nombre):
+                if not nombre:
+                    return "Ingeniero"
+                n = nombre.lower()
+                import unicodedata
+                n_clean = "".join(c for c in unicodedata.normalize('NFD', n) if not unicodedata.combining(c))
+                if "juan jose" in n_clean or "miguel" in n_clean or "juan pablo" in n_clean:
+                    return "Auxiliar"
+                return "Ingeniero"
+
+            import unicodedata
+            def normalizar_para_ordenar(texto):
+                n = texto.lower()
+                return "".join(c for c in unicodedata.normalize('NFD', n) if not unicodedata.combining(c))
+
+            ingenieros = sorted([i for i in inspectores if obtener_rol(i) == "Ingeniero"], key=normalizar_para_ordenar)
+            auxiliares = sorted([i for i in inspectores if obtener_rol(i) == "Auxiliar"], key=normalizar_para_ordenar)
+            
+            opciones_inspectores = ["", "─── INGENIEROS ───"] + ingenieros + ["─── AUXILIARES ───"] + auxiliares
             elaboro_actual = valores.get("elaboro", "")
             elaboro_index = opciones_inspectores.index(elaboro_actual) if elaboro_actual in opciones_inspectores else 0
-            elaboro = st.selectbox("Elaboró", options=opciones_inspectores, index=elaboro_index, help="Nombre del inspector que elabora el informe")
+            
+            def format_inspector(nombre):
+                if not nombre:
+                    return ""
+                return nombre
+
+            elaboro = st.selectbox(
+                "Elaboró",
+                options=opciones_inspectores,
+                index=elaboro_index,
+                format_func=format_inspector,
+                help="Nombre del inspector que elabora el informe"
+            )
             # Cargar lista de normas desde CSV
             normas = cargar_normas()
             opciones_normas = [""] + normas
@@ -243,6 +274,7 @@ with tab1:
                 "Revisó",
                 options=opciones_inspectores,
                 index=opciones_inspectores.index(firma_2_default) if firma_2_default in opciones_inspectores else opciones_inspectores.index(elaboro) if elaboro in opciones_inspectores else 0,
+                format_func=format_inspector,
                 help="Inspector que revisa el informe",
             )
             if firma_2:
@@ -450,6 +482,10 @@ with col2:
             st.error("⚠️ Debe seleccionar al menos un módulo")
         elif not numero_orden or not consecutivo_inicial:
             st.error("⚠️ Debe ingresar el número de orden y el consecutivo inicial")
+        elif not elaboro or elaboro in ["─── INGENIEROS ───", "─── AUXILIARES ───"]:
+            st.error("⚠️ Debe seleccionar un inspector válido en 'Elaboró'")
+        elif not firma_2 or firma_2 in ["─── INGENIEROS ───", "─── AUXILIARES ───"]:
+            st.error("⚠️ Debe seleccionar un inspector válido en 'Revisó'")
         else:
             # Generar número de informe base (visual)
             numero_informe_base = generar_numero_informe(numero_orden, consecutivo_inicial, fecha.year if hasattr(fecha, 'year') else datetime.now().year, 0)

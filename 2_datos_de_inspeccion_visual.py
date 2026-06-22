@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import uuid
 from utils import (
     cargar_kits, cargar_procedimientos, cargar_materiales,
     get_norma_global, get_material_base, get_kits_disponibles,
@@ -319,6 +320,7 @@ if "tabla_elementos_2_1" not in st.session_state:
 def agregar_fila_elemento():
     nuevo_numero = len(st.session_state.tabla_elementos_2_1) + 1
     nueva_fila = {
+        "id": uuid.uuid4().hex,
         "numero": str(nuevo_numero),
         "descripcion": "",
         "indicacion": "",
@@ -326,6 +328,7 @@ def agregar_fila_elemento():
         "observacion": ""
     }
     st.session_state.tabla_elementos_2_1.append(nueva_fila)
+
 
 # Opciones para la calificación
 opciones_calificacion = ["(C) Conforme", "(NC) No conforme", "(RI) Reinspeccionar", "(C(R)) Conforme después de reparación"]
@@ -343,6 +346,8 @@ if st.session_state.tabla_elementos_2_1:
 
     # Filas de la tabla
     for i, elemento in enumerate(st.session_state.tabla_elementos_2_1):
+        if "id" not in elemento:
+            elemento["id"] = uuid.uuid4().hex
         c1, c2, c3, c4, c5 = st.columns([1, 3, 2, 2, 3])
         
         # Número (solo lectura)
@@ -352,7 +357,7 @@ if st.session_state.tabla_elementos_2_1:
         st.session_state.tabla_elementos_2_1[i]["descripcion"] = c2.text_input(
             f"Descripción del elemento {elemento['numero']}",
             value=elemento["descripcion"],
-            key=f"elem_desc_2_1_{i}",
+            key=f"elem_desc_2_1_{elemento['id']}",
             label_visibility="collapsed"
         )
         
@@ -360,7 +365,7 @@ if st.session_state.tabla_elementos_2_1:
         indicacion_val = c3.text_input(
             f"Indicación del elemento {elemento['numero']}",
             value=elemento["indicacion"],
-            key=f"elem_ind_2_1_{i}",
+            key=f"elem_ind_2_1_{elemento['id']}",
             label_visibility="collapsed"
         )
         st.session_state.tabla_elementos_2_1[i]["indicacion"] = indicacion_val
@@ -381,7 +386,7 @@ if st.session_state.tabla_elementos_2_1:
             f"Calificación del elemento {elemento['numero']}",
             options=opciones_calificacion,
             index=index_calificacion,
-            key=f"elem_cal_2_1_{i}",
+            key=f"elem_cal_2_1_{elemento['id']}",
             label_visibility="collapsed",
             disabled=indicacion_tiene_texto,
             help="Se fuerza a No conforme cuando hay texto en Indicación." if indicacion_tiene_texto else None
@@ -393,21 +398,47 @@ if st.session_state.tabla_elementos_2_1:
         st.session_state.tabla_elementos_2_1[i]["observacion"] = c5.text_area(
             f"Observación del elemento {elemento['numero']}",
             value=elemento["observacion"],
-            key=f"elem_obs_2_1_{i}",
+            key=f"elem_obs_2_1_{elemento['id']}",
             height=100,
             label_visibility="collapsed"
         )
         
-        # Botón para eliminar fila
-        if c5.button("Eliminar", key=f"elem_eliminar_2_1_{i}"):
+        # Botones para eliminar y duplicar fila
+        col_elim, col_dupl = c5.columns(2)
+        if col_elim.button("Eliminar", key=f"elem_eliminar_2_1_{elemento['id']}", use_container_width=True):
             st.session_state.tabla_elementos_2_1.pop(i)
+            # Re-enumerar secuencialmente
+            for idx, elem in enumerate(st.session_state.tabla_elementos_2_1):
+                elem["numero"] = str(idx + 1)
+            st.rerun()
+        if col_dupl.button("Duplicar", key=f"elem_duplicar_2_1_{elemento['id']}", use_container_width=True):
+            nuevo_elemento = st.session_state.tabla_elementos_2_1[i].copy()
+            nuevo_elemento["id"] = uuid.uuid4().hex
+            st.session_state.tabla_elementos_2_1.insert(i + 1, nuevo_elemento)
+            # Re-enumerar secuencialmente
+            for idx, elem in enumerate(st.session_state.tabla_elementos_2_1):
+                elem["numero"] = str(idx + 1)
             st.rerun()
 else:
     st.info("No hay elementos inspeccionados. Use el botón 'Agregar Elemento' para comenzar.")
 
-if st.button("Agregar Elemento", key="agregar_elemento_2_1"):
-    agregar_fila_elemento()
-    st.rerun()
+# Opciones para agregar elementos
+col_cant, col_btn = st.columns([1, 2])
+with col_cant:
+    cantidad_a_agregar = st.number_input(
+        "Cantidad a agregar:",
+        min_value=1,
+        max_value=100,
+        value=1,
+        step=1,
+        key="cant_elementos_agregar_2_1"
+    )
+with col_btn:
+    st.markdown("<div style='padding-top: 28px;'></div>", unsafe_allow_html=True)
+    if st.button("➕ Agregar Elemento(s)", key="agregar_elemento_2_1", use_container_width=True):
+        for _ in range(cantidad_a_agregar):
+            agregar_fila_elemento()
+        st.rerun()
 
 st.write("---")
 
@@ -583,7 +614,7 @@ saved_key = "saved_2_1"
 if saved_key not in st.session_state:
     st.session_state[saved_key] = "bloque_2_1" in st.session_state
 
-if st.button("Guardar Datos", key="guardar_datos_2_1"):
+if st.button("Guardar Datos", key="guardar_datos_2_1", type="primary"):
     st.write("### Datos guardados correctamente")
 
     # Si el usuario seleccionó archivos pero no pulsó "Agregar Imágenes al Esquema",
