@@ -1,12 +1,38 @@
 import json
 import os
+import time
 from datetime import date, datetime
 from typing import Any, Dict
 
 import streamlit as st
+from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 STATE_DIR = os.path.join(os.path.dirname(__file__), "generated_reports")
-STATE_FILE = os.path.join(STATE_DIR, "saved_session_state.json")
+
+def get_state_file() -> str:
+    ctx = get_script_run_ctx()
+    session_id = ctx.session_id if ctx is not None else "default"
+    return os.path.join(STATE_DIR, f"saved_session_state_{session_id}.json")
+
+def _cleanup_old_states() -> None:
+    """Removes session state files older than 24 hours."""
+    try:
+        if not os.path.exists(STATE_DIR):
+            return
+        now = time.time()
+        for filename in os.listdir(STATE_DIR):
+            if filename.startswith("saved_session_state_") and filename.endswith(".json"):
+                filepath = os.path.join(STATE_DIR, filename)
+                if os.path.isfile(filepath):
+                    mtime = os.path.getmtime(filepath)
+                    # 24 hours = 86400 seconds
+                    if now - mtime > 86400:
+                        try:
+                            os.remove(filepath)
+                        except OSError:
+                            pass
+    except Exception:
+        pass
 
 _RESTORE_FLAG = "_saved_state_restored"
 
@@ -126,6 +152,7 @@ def _should_persist_key(key: str) -> bool:
 
 def persist_session_state() -> None:
     os.makedirs(STATE_DIR, exist_ok=True)
+    _cleanup_old_states()
 
     state = {}
     for key, value in st.session_state.items():
@@ -140,7 +167,8 @@ def persist_session_state() -> None:
         "state": state,
     }
 
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
+    state_file = get_state_file()
+    with open(state_file, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
@@ -150,11 +178,12 @@ def restore_session_state() -> bool:
 
     st.session_state[_RESTORE_FLAG] = True
 
-    if not os.path.exists(STATE_FILE):
+    state_file = get_state_file()
+    if not os.path.exists(state_file):
         return False
 
     try:
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
+        with open(state_file, "r", encoding="utf-8") as f:
             payload = json.load(f)
     except (OSError, json.JSONDecodeError):
         return False
@@ -171,11 +200,12 @@ def restore_session_state() -> bool:
 
 
 def get_saved_at() -> str:
-    if not os.path.exists(STATE_FILE):
+    state_file = get_state_file()
+    if not os.path.exists(state_file):
         return ""
 
     try:
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
+        with open(state_file, "r", encoding="utf-8") as f:
             payload = json.load(f)
     except (OSError, json.JSONDecodeError):
         return ""
@@ -187,9 +217,10 @@ def get_saved_at() -> str:
 
 def clear_persisted_state() -> None:
     """Clears persisted form state from disk and current session."""
-    if os.path.exists(STATE_FILE):
+    state_file = get_state_file()
+    if os.path.exists(state_file):
         try:
-            os.remove(STATE_FILE)
+            os.remove(state_file)
         except OSError:
             pass
 
